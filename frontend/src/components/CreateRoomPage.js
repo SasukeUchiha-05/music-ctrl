@@ -9,8 +9,17 @@ import { Link } from "react-router-dom";
 import Radio from "@material-ui/core/Radio";
 import RadioGroup from "@material-ui/core/RadioGroup";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
+import { useNavigate } from "react-router-dom";
 
-export default class CreateRoomPage extends Component {
+
+function withNavigate(Component) {
+    return function WithNavigateWrapper(props) {
+      const navigate = useNavigate();
+      return <Component {...props} navigate={navigate} />;
+    };
+  }
+
+class CreateRoomPage extends Component {
   defaultVotes = 2;
 
   constructor(props) {
@@ -37,18 +46,27 @@ export default class CreateRoomPage extends Component {
   };
 
   handleRoomButtonPressed = () => {
+
+    const { votesToSkip, guestCanPause } = this.state;
+
     const requestOptions = {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          votes_to_skip: this.state.votesToSkip,
-          guest_can_pause: this.state.guestCanPause,
+            votes_to_skip: votesToSkip,
+            guest_can_pause: guestCanPause,
         }),
-        };
-        fetch("/api/create-room", requestOptions).then((response)=>
-        response.json()
-    ).then((data)=>console.log(data));
-  };
+    };
+
+    fetch("/api/create-room", requestOptions)
+        .then((response) => response.json())
+        .then((data) => {
+            this.props.navigate("/room/"+data.code); // Use navigate to redirect
+        })
+        .catch((error) => {
+            console.error("Error creating room:", error);
+        });
+};
 
 
   render() {
@@ -120,3 +138,5 @@ export default class CreateRoomPage extends Component {
     );
   }
 }
+
+export default withNavigate(CreateRoomPage);

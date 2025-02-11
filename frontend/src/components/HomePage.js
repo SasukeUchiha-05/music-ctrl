@@ -17,6 +17,7 @@ export default class HomePage extends Component {
     this.state = {
       roomCode: null,
     };
+    this.clearRoomCode = this.clearRoomCode.bind(this);
   }
 
   async componentDidMount() {
@@ -27,6 +28,12 @@ export default class HomePage extends Component {
         });
       })
     );
+  }
+
+  clearRoomCode() {
+    this.setState({
+      roomCode: null,
+    });
   }
 
   renderHomePage() {
@@ -80,7 +87,11 @@ export default class HomePage extends Component {
               )
             }
           />
-          <Route path="/room/:roomCode" Component={Room} />
+          {/* <Route path="/room/:roomCode" Component={Room} /> */}
+          <Route
+            path="/room/:roomCode"
+            element={<Room leaveRoomCallback={this.clearRoomCode} />}
+          />
         </Routes>
       </Router>
     );

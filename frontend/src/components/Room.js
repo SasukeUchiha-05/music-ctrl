@@ -1,59 +1,53 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { Grid, Button, Typography } from '@material-ui/core';
-import CreateRoomPage from './CreateRoomPage';
+import React, { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { Grid, Button, Typography } from "@mui/material"; // Updated MUI import
+import CreateRoomPage from "./CreateRoomPage";
 
 function Room({ leaveRoomCallback }) {
-    const { roomCode } = useParams(); // Extract roomCode from URL params
-    const navigate = useNavigate(); // Use navigate for navigation
-    const [state, setState] = useState({
-        votesToSkip: 2,
-        guestCanPause: false,
-        isHost: false,
-    });
+    const { roomCode } = useParams();
+    const navigate = useNavigate();
+    
+    const [votesToSkip, setVotesToSkip] = useState(2);
+    const [guestCanPause, setGuestCanPause] = useState(false);
+    const [isHost, setIsHost] = useState(false);
     const [showSettings, setShowSettings] = useState(false);
+
+    // Function to fetch room details
+    const getRoomDetails = () => {
+        fetch("/api/get-room?code=" + roomCode)
+            .then((response) => {
+                if (!response.ok) {
+                    leaveRoomCallback();
+                    navigate("/");
+                    return null;
+                }
+                return response.json();
+            })
+            .then((data) => {
+                if (data) {
+                    setVotesToSkip(data.votes_to_skip);
+                    setGuestCanPause(data.guest_can_pause);
+                    setIsHost(data.is_host);
+                }
+            })
+            .catch((error) => console.error("Error fetching room details:", error));
+    };
 
     // Fetch room details when component mounts
     useEffect(() => {
-        const getRoomDetails = () => {
-            fetch('/api/get-room?code=' + roomCode)
-                .then((response) => {
-                    if (!response.ok) {
-                        leaveRoomCallback();
-                        navigate('/');
-                        return null;
-                    }
-                    return response.json();
-                })
-                .then((data) => {
-                    if (data) {
-                        setState({
-                            votesToSkip: data.votes_to_skip,
-                            guestCanPause: data.guest_can_pause,
-                            isHost: data.is_host,
-                        });
-                    }
-                })
-                .catch((error) => {
-                    console.error('Error fetching room details:', error);
-                });
-        };
-
         if (roomCode) {
             getRoomDetails();
         }
-    }, [roomCode, leaveRoomCallback, navigate]);
+    }, [roomCode]);
 
     const leaveButtonPressed = () => {
-        fetch('/api/leave-room', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-        })
-            .then(() => {
-                leaveRoomCallback();
-                navigate('/');
-            })
-            .catch((error) => console.error('Error leaving room:', error));
+        fetch("/api/leave-room", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+        }).then(() => {
+            leaveRoomCallback();
+            navigate("/");
+        }).catch((error) => console.error("Error leaving room:", error));
     };
 
     const renderSettings = () => (
@@ -61,21 +55,10 @@ function Room({ leaveRoomCallback }) {
             <Grid item xs={12} align="center">
                 <CreateRoomPage
                     update={true}
-                    votesToSkip={state.votesToSkip}
-                    guestCanPause={state.guestCanPause}
+                    votesToSkip={votesToSkip}
+                    guestCanPause={guestCanPause}
                     roomCode={roomCode}
-                    updateCallback={() => {
-                        setShowSettings(false);
-                        fetch('/api/get-room?code=' + roomCode)
-                            .then((response) => response.json())
-                            .then((data) => {
-                                setState({
-                                    votesToSkip: data.votes_to_skip,
-                                    guestCanPause: data.guest_can_pause,
-                                    isHost: data.is_host,
-                                });
-                            });
-                    }}
+                    updateCallback={getRoomDetails} // Ensure updated details refresh immediately
                 />
             </Grid>
             <Grid item xs={12} align="center">
@@ -99,20 +82,20 @@ function Room({ leaveRoomCallback }) {
             </Grid>
             <Grid item xs={12} align="center">
                 <Typography variant="h6" component="h6">
-                    Votes: {state.votesToSkip}
+                    Votes: {votesToSkip}
                 </Typography>
             </Grid>
             <Grid item xs={12} align="center">
                 <Typography variant="h6" component="h6">
-                    Guest Can Pause: {state.guestCanPause.toString()}
+                    Guest Can Pause: {guestCanPause.toString()}
                 </Typography>
             </Grid>
             <Grid item xs={12} align="center">
                 <Typography variant="h6" component="h6">
-                    Host: {state.isHost.toString()}
+                    Host: {isHost.toString()}
                 </Typography>
             </Grid>
-            {state.isHost && (
+            {isHost && (
                 <Grid item xs={12} align="center">
                     <Button variant="contained" color="primary" onClick={() => setShowSettings(true)}>
                         Settings

@@ -11,6 +11,7 @@ function Room({ leaveRoomCallback }) {
     const [guestCanPause, setGuestCanPause] = useState(false);
     const [isHost, setIsHost] = useState(false);
     const [showSettings, setShowSettings] = useState(false);
+    const [spotifyAuthenticated, setSpotifyAuthenticated] = useState(false);
 
     // Function to fetch room details
     const getRoomDetails = () => {
@@ -28,9 +29,28 @@ function Room({ leaveRoomCallback }) {
                     setVotesToSkip(data.votes_to_skip);
                     setGuestCanPause(data.guest_can_pause);
                     setIsHost(data.is_host);
+                    if (data.is_host) {
+                        authenticateSpotify();
+                    }
                 }
             })
             .catch((error) => console.error("Error fetching room details:", error));
+    };
+
+    const authenticateSpotify = () => {
+        fetch("/spotify/is-auth")
+            .then((response) => response.json())
+            .then((data) => {
+                setSpotifyAuthenticated(data.status);
+                if (!data.status) {
+                    fetch("/spotify/get-auth")
+                        .then((response) => response.json())
+                        .then((data) => {
+                            window.location.replace(data.url);
+                        });
+                }
+            })
+            .catch((error) => console.error("Error authenticating Spotify:", error));
     };
 
     // Fetch room details when component mounts
@@ -102,6 +122,11 @@ function Room({ leaveRoomCallback }) {
                     </Button>
                 </Grid>
             )}
+            <Grid item xs={12} align="center">
+                <Typography variant="h6" component="h6">
+                    Spotify Authenticated: {spotifyAuthenticated.toString()}
+                </Typography>
+            </Grid>
             <Grid item xs={12} align="center">
                 <Button variant="contained" color="secondary" onClick={leaveButtonPressed}>
                     Leave Room

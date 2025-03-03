@@ -57,15 +57,30 @@ function Room({ leaveRoomCallback }) {
     };
 
     // Fetch currently playing song
+    // const getCurrentSong = () => {
+    //     fetch("/spotify/current-song")
+    //         .then((response) => response.ok ? response.json() : {})
+    //         .then((data) => {
+    //             setSong(data);
+    //             console.log("Current Song:", data);
+    //         })
+    //         .catch((error) => console.error("Error fetching current song:", error));
+    // };
     const getCurrentSong = () => {
         fetch("/spotify/current-song")
-            .then((response) => response.ok ? response.json() : {})
+            .then((response) => {
+                if (response.ok && response.status !== 204) {
+                    return response.json();
+                }
+                return {}; 
+            })
             .then((data) => {
                 setSong(data);
                 console.log("Current Song:", data);
             })
             .catch((error) => console.error("Error fetching current song:", error));
     };
+    
 
     // Leave room
     const leaveButtonPressed = () => {

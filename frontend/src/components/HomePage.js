@@ -9,6 +9,7 @@ import {
   Route,
   Link,
   Redirect,
+  Navigate,
 } from "react-router-dom";
 
 export default class HomePage extends Component {

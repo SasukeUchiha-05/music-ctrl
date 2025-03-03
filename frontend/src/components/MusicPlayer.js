@@ -7,6 +7,20 @@ import SkipNextIcon from "@mui/icons-material/SkipNext";
 const MusicPlayer = ({ title, artist, image_url, is_playing, time, duration }) => {
     const songProgress = (time / duration) * 100;
 
+    const pauseSong = () => {
+        fetch("/spotify/pause", {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+        });
+    };
+
+    const playSong = () => {
+        fetch("/spotify/play", {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+        });
+    };
+
     return (
         <Card>
             <Grid container alignItems="center">
@@ -21,7 +35,7 @@ const MusicPlayer = ({ title, artist, image_url, is_playing, time, duration }) =
                         {artist}
                     </Typography>
                     <div>
-                        <IconButton>
+                        <IconButton onClick={is_playing ? pauseSong : playSong}>
                             {is_playing ? <PauseIcon /> : <PlayArrowIcon />}
                         </IconButton>
                         <IconButton>

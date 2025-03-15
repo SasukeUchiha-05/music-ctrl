@@ -37,7 +37,7 @@ def is_spotify_authenticated(session_id):
         expiry = tokens.expires_in
         if expiry <= timezone.now():
             print("Access token expired. Refreshing...")
-            refresh_spotify_token(session_id)  # Refresh before returning authentication status
+            refresh_spotify_token(session_id)  
         
         return True
     return False   
